@@ -1,0 +1,32 @@
+extends layout
+
+block content
+  h1= title
+
+  form(method='POST' action='')
+    div.form-group
+      label(for='fecha') Fecha:
+      input#fecha.form-control(type='text', placeholder='hoy' name='fecha' required='true' value=(undefined===venta ? '' : venta.fecha_formateada) )
+    div.form-group
+      label(for='producto') Producto:
+      select#producto.form-control(type='select', placeholder='Select producto' name='producto' required='true' )
+        for producto in productos
+          option(value=producto._id) #{producto.articulo}
+    div.form-group
+      label(for='total') total:
+      input#total.form-control(type='textarea', placeholder='total' name='total' value=(undefined===venta ? '' : venta.total) required='true')
+    div.form-group
+      label(for='cantidad') cantidad:
+      input#cantidad.form-control(type='textarea', placeholder='cantidad' name='cantidad' value=(undefined===venta ? '' : venta.cantidad) required='true')
+    div.form-group
+      label(for='media') media:
+      input#media.form-control(type='textarea', placeholder='media' name='media' value=(undefined===venta ? '' : venta.media) required='true')
+    button.btn.btn-primary(type='submit') Terminar
+
+  p 
+  a(href=venta.url+'/agregar_producto') Agregar Producto
+
+  if errors 
+    ul
+      for error in errors
+        li!= error.msg

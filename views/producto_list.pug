@@ -1,0 +1,63 @@
+extends layout
+
+block content
+  div.row
+    div.col-sm-8
+      h1= title
+    div.col-sm-2
+      a(href='#' data-toggle="modal" data-target="#passChgModal") #[strong Cambiar Contraseña]
+  if msg.length > 0
+    ul  
+      li.alert-warning!=msg
+  div.row
+    div.col-sm-6
+      a.btn.btn-info(href='create' role='button') Nuevo Producto
+    div.col-sm-6
+      a(href='/') Regresar
+
+  input#miBusqueda.form-control(type='text' placeholder='Busqueda...')
+
+  div#passChgModal.modal.fade(role='dialog')
+    div.modal-dialog
+    
+      div.modal-content
+        div.modal-header
+          button.close(type="button", data-dismiss="modal") &times;
+          h4.modal-title Cambiar Contraseña
+        div.modal-body
+          form(method='POST' action='/producto/passChg')
+            div.form-group
+              label(for='passwordActual') Actual:
+              input#capturista.form-control(type='password', name='passwordActual')
+            div.form-group
+              label(for='passwordNueva') Nueva:
+              input#capturista.form-control(type='password', name='passwordNueva')
+            button.btn.btn-primary(type='submit') Aceptar
+        div.modal-footer
+          button.btn.btn-default(type="button", data-dismiss="modal") Cancelar
+  table.table.table-striped
+    thead
+      tr
+        th Artículo
+        th Descripción
+        th Precio
+        th Acciones
+    tbody#miTabla
+      each producto in producto_list
+        tr
+          td #{'@'+producto.articulo}
+          td #{producto.descripcion}
+          td #{producto.precio}
+          td
+            - var urleditar = producto.url+'/editar'
+            a(href=urleditar data-toggle='tooltip' title='Editar Producto') 
+              span.glyphicon.glyphicon-pencil
+            - var urleliminar = producto.url+'/eliminar' 
+            a(href=urleliminar data-toggle='tooltip' title='Eliminar Producto') 
+              span.glyphicon.glyphicon-remove
+      else
+        tr
+          td No hay productos.
+
+block scriptsEnd
+  script(src='/javascripts/main2.js')

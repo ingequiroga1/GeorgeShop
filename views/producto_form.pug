@@ -1,0 +1,27 @@
+extends layout
+
+block content
+  h1= title
+  if errors
+    ul
+    for error in errors
+        li.alert-danger!= error.msg
+
+  form(method='POST' action='')
+    div.form-group
+      label(for='articulo') Artículo:
+      input#articulo.form-control(type='text', placeholder='0000' name='articulo' readonly=(tipo=='agregar'?false:true) autocomplete='off' required='true' value=(undefined===producto ? '' : producto.articulo) )
+    div.form-group
+      label(for='descripcion') Descripción:
+      input#descripcion.form-control(type='text', placeholder='Descripcion' name='descripcion' autocomplete='off' required='true' value=(undefined===producto ? '' : producto.descripcion) onKeyUp='document.getElementById(this.id).value=document.getElementById(this.id).value.toUpperCase()')
+    div.form-group
+      label(for='precio') Precio:
+      input#precio.form-control(type='text', placeholder='0.00' name='precio' required='true' value=(undefined===producto ? '' : producto.precio) )
+    if tipo == "eliminar"
+      div.alert.alert-warning #[strong ¿Deseas eliminar el producto?]
+      button.btn.btn-primary(type='submit') Aceptar
+    else
+      button.btn.btn-primary(type='submit') Guardar
+
+  p 
+  a(href='/producto/lista') Cancelar

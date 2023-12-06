@@ -1,0 +1,63 @@
+extends layout
+
+block content
+  div.row
+    div.col-sm-8
+      h1= title
+    div.col-sm-2
+      a(href='#' data-toggle="modal" data-target="#passModal") #[strong Ver Productos]
+  div.autocomplete.mt-5
+    input#prodescripcion.form-control(type='text' name='prodescripcion' placeholder='Consulta de precios'  autocomplete='off' onKeyUp='document.getElementById(this.id).value=document.getElementById(this.id).value.toUpperCase()')
+  
+  div#passModal.modal.fade(role='dialog')
+    div.modal-dialog
+    
+      div.modal-content
+        div.modal-header
+          button.close(type="button", data-dismiss="modal") &times;
+          h4.modal-title Ver lista de Productos
+        div.modal-body
+          form(method='POST' action='/producto/pass')
+            div.form-group
+              label(for='password') Contraseña:
+              input#capturista.form-control(type='password', name='password')
+            button.btn.btn-primary(type='submit') Aceptar
+        div.modal-footer
+          button.btn.btn-default(type="button", data-dismiss="modal") Cancelar
+  table.table.table-striped#tbventas
+    thead
+      tr
+        th Secuencia
+        th Fecha
+        th No_Piezas
+        th No_Medias
+        th Total
+        th Cliente
+        th Acciones
+    tbody
+      each venta in venta_list
+        tr
+          td #{venta.secuencia}
+          td #{venta.fecha_formateada}
+          td #{venta.no_piezas}
+          td #{venta.no_medias}
+          td #{venta.total_formateado}
+          td #{venta.capturista}
+          td
+            a(href=venta.url data-toggle='tooltip' title='Ver detalle') 
+              span.glyphicon.glyphicon-pencil
+            - var urleliminar = venta.url+'/eliminar' 
+            a(href=urleliminar data-toggle='tooltip' title='Eliminar Venta') 
+              span.glyphicon.glyphicon-remove
+            - var urlimprimir = venta.url+'/imprimir' 
+            a(href=urlimprimir data-toggle='tooltip' title='Imprimir Venta') 
+              span.glyphicon.glyphicon-print
+      else
+        tr
+          td No hay ventas.
+
+  p 
+  a.btn.btn-info(href='create' role='button') Nueva Venta
+block scriptsEnd
+  script(src='/javascripts/autocompleteprecio.js')
+  script(src='/javascripts/iniDataTable.js')

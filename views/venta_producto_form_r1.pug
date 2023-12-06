@@ -1,0 +1,35 @@
+extends layout
+block scripts
+  script(src='/javascripts/main.js')
+
+block content
+  h1= title
+
+  form(method='POST' action='')
+    div.form-group.autocomplete
+      input#prodescripcion.form-control(type='text' name='prodescripcion' placeholder='Descripcion de Producto' readonly=(tipo=='agregar'?false:true) required='true', value=(undefined===prodes ? '' : prodes))
+    div.form-group
+      label(for='cantidad') Cantidad:
+      input#cantidad.form-control(type='input', placeholder='cantidad' name='cantidad' value=(undefined===producto ? '' : producto.cantidad) required='true')
+      if tipo == "editar"
+        button.btn.btn-primary.btn_masCantidad(type='button', data-toggle='tooltip' title='Aumentar una media') 
+          span.glyphicon.glyphicon-plus
+        
+        button.btn.btn-primary.btn_menosCantidad(type='button', data-toggle='tooltip' title='Disminuir una media') 
+          span.glyphicon.glyphicon-minus
+      if tipo == "eliminar"
+        div.alert.alert-warning #[strong ¿Deseas eliminar el producto de la venta?]
+    button.btn.btn-primary(type='submit') Aceptar
+
+  p 
+  a(href=venta.url) Cancelar
+
+
+  if errors
+    p errores 
+    ul
+      for error in errors
+        li!= error.msg
+
+block scriptsEnd
+  script(src='/javascripts/autocomplete.js')

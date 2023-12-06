@@ -1,0 +1,109 @@
+extends layout
+
+block content
+  h1= title
+
+  p #[strong Secuencia:] #{venta.secuencia}
+  p #[strong Fecha:] #{venta.fecha_formateada}
+  p #[strong Capturista:] #{venta.capturista} 
+    button.btn.btn-info(type='button' data-toggle="modal" data-target="#capturistaModal")
+      span.glyphicon.glyphicon-pencil
+  
+  div#capturistaModal.modal.fade(role='dialog')
+    div.modal-dialog
+    
+      div.modal-content
+        div.modal-header
+          button.close(type="button", data-dismiss="modal") &times;
+          h4.modal-title Modificar Capturista
+        div.modal-body
+          form(method='POST' action=venta.url+'/capturista')
+            div.form-group
+              label(for='capturista') Capturista:
+              input#capturista.form-control(type='input', placeholder='capturista' name='capturista' value=(undefined===venta ? '' : venta.capturista))
+            button.btn.btn-primary(type='submit') Aceptar
+        div.modal-footer
+          button.btn.btn-default(type="button", data-dismiss="modal") Cancelar
+
+  div#descuentoModal.modal.fade(role='dialog')
+    div.modal-dialog
+    
+      div.modal-content
+        div.modal-header
+          button.close(type="button", data-dismiss="modal") &times;
+          h4.modal-title Modificar Descuento
+        div.modal-body
+          form(method='POST' action=venta.url+'/descuento')
+            div.form-group
+              label(for='capturista') Descuento:
+              input#descuento.form-control(type='input', placeholder='Descuento' name='descuento' value=(undefined===venta ? '' : venta.descuento))
+            button.btn.btn-primary(type='submit') Aceptar
+        div.modal-footer
+          button.btn.btn-default(type="button", data-dismiss="modal") Cancelar
+  
+  table.table.table-striped
+    thead
+      tr
+        th Articulo
+        th Descripcion
+        th Precio U.
+        th # Unidades
+        th Subtotal
+        th # Medias
+        th Acciones
+    tbody 
+      each producto inventa.productos
+        tr
+          td #{producto.producto.articulo}
+          td #{producto.producto.descripcion}
+          td #{producto.producto.precio}
+          td #{producto.cantidad}
+          td #{producto.importe}
+          td #{producto.medias}
+          td
+            if tipo != 'eliminar'
+              - var urlremove = venta.url+'/'+producto.producto._id+'/eliminar'
+              a(href=urlremove data-toggle='tooltip' title='Eliminar') 
+                span.glyphicon.glyphicon-remove
+              - var urleditar = venta.url+'/'+producto.producto._id+'/editar'
+              a(href=urleditar data-toggle='tooltip' title='Editar') 
+                span.glyphicon.glyphicon-pencil
+      else
+        tr
+          td No hay productos.  
+  table.table.table-striped
+    thead
+      tr
+        th SubTotal
+        th 
+          a(href='#' data-toggle="modal" data-target="#descuentoModal") Descuento   
+            span.glyphicon.glyphicon-pencil
+        th Total
+        th # Piezas
+        th # Medias
+    tbody 
+      tr
+        td #{venta.subtotal}
+        td #{venta.descuento}
+        td #{venta.total}
+        td #{venta.no_piezas}
+        td #{venta.no_medias}
+
+  p
+  if tipo == 'eliminar'
+    form(method='POST' action='') 
+      div.alert.alert-warning #[strong ¿Deseas eliminar la venta?]
+      input#idventa.form-control(type='hidden', name='idventa', value=venta._id)
+      button.btn.btn-primary(type='submit') Eliminar Venta
+  else
+    form(method='GET' action=venta.url+'/agregar_producto')
+      button.btn.btn-primary(type='submit') Agregar Producto
+    form(method='GET' action=venta.url+'/imprimir')
+      button.btn.btn-primary(type='submit') Imprimir venta
+
+  p
+  a(href='/venta/lista') Regresar a la lista
+  if errors 
+    ul
+      for error in errors
+        li!= error.msg

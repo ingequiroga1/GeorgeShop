@@ -1,0 +1,62 @@
+extends layout
+block scripts
+  script(src='/javascripts/main.js')
+
+block content
+  h1= title
+  
+  if errors
+    p errores 
+    ul
+      for error in errors
+        li.alert-danger!= error.msg
+  form(method='POST' action='')
+    div.row
+      div.col-sm-2
+        label(for='articulo') Artículo:
+        input#articulo.form-control(type='text' name='articulo' readonly=(tipo=='agregar'?false:true) autocomplete='off' required='true', value=(undefined===producto ? '' : producto.producto.articulo))
+    div.row
+      div.col-sm-8
+        div.form-group.autocomplete
+          label(for='prodescripcion') Producto:
+          input#prodescripcion.form-control(type='text' name='prodescripcion' placeholder='Descripcion de Producto' readonly=(tipo=='agregar'?false:true) autocomplete='off' required='true', value=(undefined===prodes ? '' : prodes))
+      div.col-sm-2
+        div.form-group
+          label(for='cantidad') Cantidad:
+          input#cantidad.form-control(type='input', placeholder='cantidad' name='cantidad' value=(undefined===producto ? '0' : producto.cantidad) required='true')
+      div.col-sm-2
+        if tipo == "editar"
+          button.btn.btn-primary.btn_masCantidad(type='button', data-toggle='tooltip' title='Aumentar una media') 
+            span.glyphicon.glyphicon-plus
+          =' '
+          button.btn.btn-primary.btn_menosCantidad(type='button', data-toggle='tooltip' title='Disminuir una media') 
+            span.glyphicon.glyphicon-minus
+    if tipo == "eliminar"
+      div.alert.alert-warning #[strong ¿Deseas eliminar el producto de la venta?]
+    button.btn.btn-primary(type='submit') Aceptar
+
+  if tipo == "agregar"
+    table.table.table-striped
+      thead
+        tr
+          th Articulo
+          th Descripcion
+          th # Unidades
+          th # Medias
+      tbody 
+        each producto inventa.productos
+          tr
+            td #{producto.producto.articulo}
+            td #{producto.producto.descripcion}
+            td #{producto.cantidad}
+            td #{producto.medias}
+        else
+          tr
+            td No hay productos.
+
+  p 
+  a(href=venta.url) Cancelar
+
+
+block scriptsEnd
+  script(src='/javascripts/autocomplete.js')

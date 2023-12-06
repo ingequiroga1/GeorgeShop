@@ -1,0 +1,143 @@
+extends layout
+block scripts
+  script(src='/javascripts/main.js')
+
+block content
+  h1= title
+  table.table
+    tr  
+      td #[strong #{'#'}Sec:] #{venta.secuencia}
+      td #[strong Fecha:] #{venta.fecha_formateada}
+      td 
+        a(href='#' data-toggle="modal" data-target="#clienteModal") #[strong Cliente:]   
+          span.glyphicon.glyphicon-pencil 
+        =venta.capturista
+  if !tipo || tipo != "eliminar"
+    if errors
+      p errores 
+      ul
+        for error in errors
+          li.alert-danger!= error.msg
+    - var urlagregarproducto = venta.url + '/agregar_producto'
+    form(method='POST' action=urlagregarproducto)
+      div.row
+        div.col-sm-8
+          div.form-group.autocomplete
+            label(for='prodescripcion') Producto:
+            input#prodescripcion.form-control(type='text' name='prodescripcion' placeholder='Descripcion de Producto'  autocomplete='off' required='true', value=(undefined===prodes ? '' : prodes) onKeyUp='document.getElementById(this.id).value=document.getElementById(this.id).value.toUpperCase()' autofocus)
+        div.col-sm-4
+          table.addproducto
+            tr
+              td
+                div.form-group
+                  label(for='cantidad') Cantidad:
+                  input#cantidad.form-control(type='input', placeholder='cantidad' name='cantidad' value=(undefined===producto ? '6' : producto.cantidad) required='true')
+              td
+                =' '
+              td
+                button.btn.btn-primary.btn_masCantidad(type='button', data-toggle='tooltip' title='Aumentar una media') 
+                  span.glyphicon.glyphicon-plus
+              td
+                button.btn.btn-primary.btn_menosCantidad(type='button', data-toggle='tooltip' title='Disminuir una media') 
+                  span.glyphicon.glyphicon-minus
+      button.btn.btn-primary(type='submit') Agregar Producto
+    hr
+    div#clienteModal.modal.fade(role='dialog')
+      div.modal-dialog
+      
+        div.modal-content
+          div.modal-header
+            button.close(type="button", data-dismiss="modal") &times;
+            h4.modal-title Modificar Cliente
+          div.modal-body
+            form(method='POST' action=venta.url+'/capturista')
+              div.form-group
+                label(for='capturista') Cliente:
+                input#capturista.form-control(type='input', placeholder='Nombre Cliente' name='capturista' value=(undefined===venta ? '' : venta.capturista) onKeyUp='document.getElementById(this.id).value=document.getElementById(this.id).value.toUpperCase()')
+              button.btn.btn-primary(type='submit') Aceptar
+          div.modal-footer
+            button.btn.btn-default(type="button", data-dismiss="modal") Cancelar
+
+    div#descuentoModal.modal.fade(role='dialog')
+      div.modal-dialog
+      
+        div.modal-content
+          div.modal-header
+            button.close(type="button", data-dismiss="modal") &times;
+            h4.modal-title Modificar Descuento
+          div.modal-body
+            form(method='POST' action=venta.url+'/descuento')
+              div.form-group
+                label(for='descuento') Descuento:
+                input#descuento.form-control(type='input', placeholder='Descuento' name='descuento' value=(undefined===venta ? '' : venta.descuento))
+              button.btn.btn-primary(type='submit') Aceptar
+          div.modal-footer
+            button.btn.btn-default(type="button", data-dismiss="modal") Cancelar
+  
+
+  table.table.table-striped#tbdetalle
+    thead
+      tr
+        th Id1
+        th Articulo
+        th Descripcion
+        th # Unidades
+        th # Medias
+        th Precio U.
+        th Importe
+        th Acciones
+    tbody 
+      each producto,index inventa.productos
+        tr
+          td #{index+1}
+          td #{producto.producto.articulo}
+          td #{producto.producto.descripcion}
+          td #{producto.cantidad}
+          td #{producto.medias}
+          td #{producto.producto.precio_formateado}
+          td #{producto.importe_formateado}
+          td
+            if tipo != 'eliminar'
+              - var urlremove = venta.url+'/'+producto.producto._id+'/eliminar'
+              a(href=urlremove data-toggle='tooltip' title='Eliminar') 
+                span.glyphicon.glyphicon-remove
+              - var urleditar = venta.url+'/'+producto.producto._id+'/editar'
+              a(href=urleditar data-toggle='tooltip' title='Editar') 
+                span.glyphicon.glyphicon-pencil
+      else
+        tr
+          td No hay productos.  
+  table.table.table-striped
+    thead
+      tr
+        th # Unidades
+        th # Medias
+        th SubTotal
+        th 
+          a(href='#' data-toggle="modal" data-target="#descuentoModal") Descuento   
+            span.glyphicon.glyphicon-pencil
+        th Total
+    tbody 
+      tr
+        td #{venta.no_piezas}
+        td #{venta.no_medias}
+        td #{venta.subtotal_formateado}
+        td #{venta.descuento_formateado}
+        td #{venta.total_formateado}
+ 
+  p
+  if tipo == 'eliminar'
+    form(method='POST' action='') 
+      div.alert.alert-warning #[strong ¿Deseas eliminar la venta?]
+      input#idventa.form-control(type='hidden', name='idventa', value=venta._id)
+      button.btn.btn-primary(type='submit') Eliminar Venta
+  else
+    form(method='GET' action=venta.url+'/imprimir')
+      button.btn.btn-primary(type='submit') Imprimir venta
+
+  p
+  a(href='/venta/lista') Regresar a la lista
+  
+block scriptsEnd
+  script(src='/javascripts/autocomplete.js')
+  script(src='/javascripts/iniDataTable.js')
