@@ -78,7 +78,7 @@ block content
   table.table.table-striped#tbdetalle
     thead
       tr
-        th Id1
+        th Id
         th Articulo
         th Descripcion
         th # Unidades
@@ -87,7 +87,7 @@ block content
         th Importe
         th Acciones
     tbody 
-      each producto,index inventa.productos
+      each producto,index in venta.productos
         tr
           td #{index+1}
           td #{producto.producto.articulo}
@@ -106,7 +106,14 @@ block content
                 span.glyphicon.glyphicon-pencil
       else
         tr
-          td No hay productos.  
+          td No hay productos. 
+          td 
+          td  
+          td 
+          td
+          td
+          td 
+          td
   table.table.table-striped
     thead
       tr

@@ -12,8 +12,25 @@ exports.venta_list = function(req, res, next) {
   Venta.find({})
     .exec(function (err, list_ventas) {
       if (err) { return next(err); }
-      //Successful, so render
+      if (list_ventas.length > 0) {
+          //Successful, so render
       res.render('venta_list', { title: 'Lista de Ventas', venta_list: list_ventas });
+      } else {
+        let listavacia = [
+            {
+                "secuencia": "No hay Ventas",
+                "fecha_formateada": "",
+                "no_piezas": "",
+                "no_medias": "",
+                "total_formateado":"",
+                "capturista":""
+            }
+        ]
+
+        res.render('venta_list', { title: 'Lista de Ventas', venta_list: listavacia });
+      }
+
+    
     });  
 };
 
@@ -55,14 +72,24 @@ exports.venta_detail = function(req, res, next) {
         },
     }, function(err, results) {
         if (err) { return next(err); }
-
+        console.log(results.venta);
         if (results.venta==null) { // No results.
             var err = new Error('Venta not found');
             err.status = 404;
             return next(err);
         }
 
-        res.render('venta_detail', { title: 'Detalle', venta: results.venta } );
+        //if (results.venta.length > 0) {
+            res.render('venta_detail', { title: 'Detalle', venta: results.venta } );
+        // } else {
+        //     let lisvacia = [
+        //         {
+        //             Id1
+        //         }
+        //     ]
+        // }
+
+        
     });
 
 };

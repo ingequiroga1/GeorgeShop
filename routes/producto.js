@@ -8,6 +8,7 @@ router.post('/create', producto_controller.producto_create_post);
 
 router.get('/lista/:msg', producto_controller.producto_list);
 router.get('/lista', producto_controller.producto_list);
+router.get('/api/lista', producto_controller.producto_api_list);
 
 router.get('/:id/editar', producto_controller.producto_editar_get);
 router.post('/:id/editar', producto_controller.producto_editar_post);

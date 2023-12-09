@@ -18,7 +18,20 @@ exports.producto_list = function(req, res, next) {
         res.render('producto_list', { title: 'Lista de Productos', producto_list: list_productos, msg:msg });
       });  
   };
-  
+ //VQuiroga 
+// Muestra lista de los Productos para Api.
+exports.producto_api_list = function(req, res, next) {
+    Producto.find({}).sort({articulo:1})
+      .exec(function (err, list_productos) {
+        if (err) { return next(err); }
+        //Successful, so return products
+        res.json(list_productos);
+      });  
+  };
+
+
+
+
 exports.producto_create_get = function(req, res) {
     res.render('producto_form', {title: 'Nuevo Producto', tipo: 'agregar'});
 };
