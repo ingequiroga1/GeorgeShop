@@ -18,6 +18,8 @@ router.post('/:id/eliminar', producto_controller.producto_eliminar_post);
 
 router.post('/pass', producto_controller.valida_password_post);
 router.post('/passChg', producto_controller.cambia_password_post);
+
+router.get('/:id/qr', producto_controller.producto_qr_get);
 /*
 router.get('/:id', producto_controller.producto_detail);
 */

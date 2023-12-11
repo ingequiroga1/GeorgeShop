@@ -2,6 +2,9 @@ const { body,validationResult } = require('express-validator/check');
 const { sanitizeBody } = require('express-validator/filter');
 var Producto = require('../models/producto');
 var Config = require('../models/config');
+const PDFDocument = require('pdfkit');
+const qr = require('qrcode');
+
 
 // Muestra lista de las Productos.
 exports.producto_list = function(req, res, next) {
@@ -246,3 +249,30 @@ exports.cambia_password_post = function(req, res, next) {
     });
 };
 
+exports.producto_qr_get = function(req, res, next) {
+
+    Producto.findById(req.params.id)
+    .exec(function(err, producto){
+        if (err) { return next(err); }
+          
+        if (producto==null) { // No results.
+            var err = [{msg:'Producto no encontrado'}];
+            err.status = 404;
+            return next(err);
+        }
+      // Successful, so render.
+      res.render('generateqr', { title: 'QR Generado', producto: producto, qr: generar_codigo_qr(producto) } );
+    });
+};
+
+function generar_codigo_qr(prod){
+    let codeqr = '@'+prod.articulo+'|'+prod.descripcion; 
+    qr.toFile('qrs/'+prod.articulo+'.png',codeqr,function(err){
+        if(err){
+            return console.log("erro");
+        }else{
+            return 'generado';   
+        }
+    });
+
+}

@@ -55,6 +55,9 @@ block content
             - var urleliminar = producto.url+'/eliminar' 
             a(href=urleliminar data-toggle='tooltip' title='Eliminar Producto') 
               span.glyphicon.glyphicon-remove
+            - var urlqr = producto.url+'/qr' 
+            a(href=urlqr data-toggle='tooltip' title='Generar QR') 
+              span.glyphicon.glyphicon-qrcode
       else
         tr
           td No hay productos.
