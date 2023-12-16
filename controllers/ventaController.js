@@ -29,10 +29,35 @@ exports.venta_list = function(req, res, next) {
 
         res.render('venta_list', { title: 'Lista de Ventas', venta_list: listavacia });
       }
-
-    
     });  
 };
+
+//Api
+// Muestra lista de las Ventas.
+exports.venta_api_list = function(req, res, next) {
+    Venta.find({})
+      .exec(function (err, list_ventas) {
+        if (err) { return err; }
+        if (list_ventas.length > 0) {
+            //Successful, so render
+        res.json(list_ventas);
+        } else {
+          let listavacia = [
+              {
+                  "secuencia": "No hay Ventas",
+                  "fecha_formateada": "",
+                  "no_piezas": "",
+                  "no_medias": "",
+                  "total_formateado":"",
+                  "capturista":""
+              }
+          ]
+  
+          res.json(listavacia);
+        }
+      });  
+  };
+
 
 
 // Carga catalogo de productos de prueba
@@ -78,18 +103,31 @@ exports.venta_detail = function(req, res, next) {
             err.status = 404;
             return next(err);
         }
-
         //if (results.venta.length > 0) {
             res.render('venta_detail', { title: 'Detalle', venta: results.venta } );
-        // } else {
-        //     let lisvacia = [
-        //         {
-        //             Id1
-        //         }
-        //     ]
-        // }
+    });
 
-        
+};
+
+//API
+exports.venta_api_detail = function(req, res, next) {
+
+    async.parallel({
+        venta: function(callback) {
+
+            Venta.findById(req.params.id)
+              .populate('productos.producto')
+              .exec(callback);
+        },
+    }, function(err, results) {
+        if (err) {  res.json(err); }
+        if (results.venta==null) { // No results.
+            var err = new Error('Venta not found');
+            err.status = 404;
+            res.json(err);
+        }
+        //if (results.venta.length > 0) {
+            res.json(results.venta);
     });
 
 };
@@ -289,6 +327,36 @@ exports.venta_capturista_post = function(req, res, next) {
 
 };
 
+//API VQUIROGA
+
+exports.venta_api_capturista_post = function(req, res, next) {
+    var id = req.params.id;
+    var capturista = req.body.capturista;
+
+    Venta.updateOne({_id: id}, { $set: {capturista: capturista}}, function (err) {
+        if (err) { res.json(err); }
+        
+        async.parallel({
+            venta: function(callback) {
+    
+                Venta.findById(id)
+                  .populate('productos.producto')
+                  .exec(callback);
+            },
+        }, function(err, results) {
+            if (err) { res.json(err); }
+    
+            if (results.venta==null) { // No results.
+                var err = new Error('Venta not found');
+                err.status = 404;
+                return next(err);
+            }
+            res.json(results);//, { title: 'Detalle', venta: results.venta } );
+        });
+    });
+
+};
+
 exports.venta_descuento_post = function(req, res, next) {
     var id = req.params.id;
     var descuento = req.body.descuento; 
@@ -451,6 +519,125 @@ exports.venta_agregar_producto_post = [
     }
 ];
 
+//API VQuiroga
+exports.venta_agregar_producto_api_post = [
+    body('cantidad', 'Cantidad requerida').isNumeric({gt:0}),
+    body('prodescripcion', 'Producto requerido').isLength({min:1}).trim(),
+
+    sanitizeBody('cantidad').trim().escape(),
+    sanitizeBody('prodescripcion').trim().escape(),
+
+    (req, res) => {
+        var id = req.params.id;
+        const errors = validationResult(req);
+
+
+        Venta.findById(id)
+            .populate('productos.producto')
+            .exec(function (err, venta) {
+            if (err) { res.json(err);}
+            var tmpDescripcion = req.body.prodescripcion;
+            var letraInicio = tmpDescripcion.substring(0,1);
+            var iniciodes = tmpDescripcion.indexOf('|');
+            if (iniciodes < 0) {
+                iniciodes = tmpDescripcion.length;
+            }
+
+            tprodes = req.body.prodescripcion.substring(iniciodes+1);
+            tarticulo = req.body.prodescripcion.substring(1, iniciodes);
+
+            if ((letraInicio=='A' || letraInicio=='@') && !isNaN(tarticulo)) {
+                //Producto.findById(req.body.producto).exec(function (err, pro) {
+                Producto.findOne({articulo: tarticulo}).exec(function (err, pro) {
+                    if (err) { console.log(err); res.json(err);}
+                                    
+                    if (!pro ){
+                        var err = [{msg:'Producto No existe'}];
+                        res.json({ title: 'Detalle', venta: venta, producto: producto, errors: err, prodes:tmpDescripcion } );
+                    }
+                    else {
+                        var producto = {
+                            producto: pro._id,
+                            cantidad: Math.round(req.body.cantidad),
+                            importe: Math.round(req.body.cantidad * pro.precio*100)/100, 
+                            medias: Math.round(req.body.cantidad / 6)
+                        };
+                        
+                        if (!errors.isEmpty()) {  
+                                              
+                            if (venta==null) { // No results.
+                                var err = new Error('Venta no encontrada');
+                                
+                                err.status = 404;
+                                res.json(err);
+                            }
+                            // Successful, so render.
+                            res.json({ title: 'Detalle', venta: venta, producto: producto, errors:err, prodes:tmpDescripcion } );
+                        return;
+                        }
+                        else {
+                           
+                            // Data from form is valid.
+                            // Check if Genre with same name already exists.
+                            Venta.find({ '_id': req.params.id}, {'productos': {$elemMatch:{'producto': producto.producto}} })
+                                .exec( function(err, producto_encontrado) {
+                                    if (err) { res.json(err); }
+                                
+                                    if (producto_encontrado[0].productos[0]) {
+                                        var ventaProducto = producto_encontrado[0].productos[0];
+                                        var sumacantidad = producto.cantidad+ventaProducto.cantidad;
+                                        var mensajeError='Ya existe el producto en la venta se agregan ' + producto.cantidad + ' piezas. Total: ' + sumacantidad;
+                                        var errEncontrado = [{msg: mensajeError}];
+                                        
+                                        var venta_subtotal = venta.subtotal + producto.importe; 
+                                        var venta_total = venta_subtotal - venta.descuento;
+                                        var venta_no_medias = venta.no_medias + producto.medias; 
+                                        var venta_no_piezas = venta.no_piezas + producto.cantidad;
+                                        
+                                        producto.cantidad = producto.cantidad+ventaProducto.cantidad;
+                                        producto.importe = producto.importe+ventaProducto.importe;
+                                        producto.medias = producto.medias+ventaProducto.medias;
+                                        
+                                        Venta.updateOne({_id: venta.id, 'productos.producto': producto.producto}, {$set: {total: venta_total, subtotal: venta_subtotal, no_piezas: venta_no_piezas, no_medias: venta_no_medias, 'productos.$.cantidad': producto.cantidad, 'productos.$.importe': producto.importe, 'productos.$.medias': producto.medias }}, function (err) {
+                                        if (err) { res.json(err); }
+                                        // Genre saved. Redirect to genre detail page.
+                                        Venta.findById(id)
+                                            .populate('productos.producto')
+                                            .exec(function (err, venta) {
+                                            if (err) { res.json(err);}
+                                            res.json({ title: 'Detalle', venta: venta, errors: errEncontrado, prodescripcion:'' });
+                                            });
+                                        });
+
+
+
+                                    }
+                                    else {
+                                        var venta_subtotal = venta.subtotal + producto.importe;
+                                        var venta_total = venta_subtotal - venta.descuento
+                                        var venta_no_medias = venta.no_medias + producto.medias;
+                                        var venta_no_piezas = venta.no_piezas + producto.cantidad;
+                                        
+                                        Venta.updateOne({_id: id}, { $push: {productos: producto}, $set: {total: venta_total, subtotal: venta_subtotal, no_piezas: venta_no_piezas, no_medias: venta_no_medias}}, function (err) {
+                                        if (err) { res.json(err); }
+                                        // Genre saved. Redirect to genre detail page.
+                                        res.json(venta);
+                                        });
+
+                                    }
+                                });
+                        }
+                    }
+                });
+            }
+            else {
+                var err = [{msg:'Producto No existe'}];
+                res.json({ title: 'Detalle', venta: venta, errors: err, prodes:tmpDescripcion } );
+            }
+        });
+    }
+];
+
 exports.venta_editar_producto_get = function(req, res, next) {
 
     async.parallel({
@@ -517,6 +704,7 @@ exports.venta_editar_producto_post = [
 
                         if (!errors.isEmpty()) {
                             
+                            console.log("entra a errores");
                             if (venta==null) { // No results.
                                 var err = new Error('Venta no encontrada');
                                 
@@ -641,6 +829,33 @@ exports.venta_create_get = function(req, res, next) {
     
     }); 
 };
+
+//Api
+exports.venta_api_create_get = function(req, res) {
+    
+    Venta.findOne().sort({secuencia:-1}).exec(function (err, max_secuencia) {
+      if(err) {return err;}
+      var secuencia = 0;
+      
+      if (max_secuencia)
+        secuencia =max_secuencia.secuencia +1;
+      else
+        secuencia = 1;
+
+      var venta = new Venta ({
+          secuencia: secuencia,
+          productos: []
+      });
+      venta.save(function (err) {
+          if (err) { return err; }
+          // Venta guardada. Redirect al detalle de la venta.
+          res.json(venta);
+        
+        });    
+    
+    }); 
+};
+
 
 
 exports.venta_busqueda = function(req, res, next) {
