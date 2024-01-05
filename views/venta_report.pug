@@ -1,0 +1,34 @@
+extends layout
+block scripts
+  script(src='/javascripts/main.js')
+
+block content
+  h1= title
+  table.table.table-striped#tbreporte
+    thead
+      tr
+        th fecha
+        th monto
+        th no medias
+        th no piezas
+    tbody 
+      each suma in sumas
+        tr
+          td #{suma.fecha}
+          td #{suma.total.toLocaleString('es-ES', { style: 'currency', currency: 'MXN'})}
+          td #{suma.no_medias}
+          td #{suma.no_piezas}
+      else
+        tr
+          td No hay productos. 
+          td 
+          td  
+          td 
+          td
+
+  p
+  a(href='/venta/lista') Regresar a la lista
+  
+block scriptsEnd
+  script(src='/javascripts/autocomplete.js')
+  script(src='/javascripts/iniDataTable.js')

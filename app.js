@@ -34,7 +34,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use(cors())
+app.use(cors({origin:true, credentials:true}));
 
 app.use('/', indexRouter);
 // app.use('/users', usersRouter);
@@ -59,5 +59,32 @@ app.use(function(err, req, res, next) {
   res.status(err.status || 500);
   res.render('error');
 });
+
+// Inicialización de Instascan
+// app.use(express.static(__dirname + '/node_modules/instascan'));
+
+// Inicia la cámara y escanea códigos QR
+// app.get('/scan', (req, res) => {
+//   Instascan.Camera.getCameras().then((cameras) => {
+//     if (cameras.length > 0) {
+//       const scanner = new Instascan.Scanner({
+//         video: document.getElementById('preview'), // Asegúrate de tener un elemento HTML con el ID 'preview' en tu vista Pug
+//       });
+
+//       scanner.addListener('scan', (content) => {
+//         console.log('Escaneado:', content);
+//         // Aquí puedes hacer lo que necesites con el contenido escaneado
+//       });
+
+//       scanner.start(cameras[0]);
+//       res.send('Escaneando códigos QR...');
+//     } else {
+//       res.send('No se encontraron cámaras en el dispositivo.');
+//     }
+//   }).catch((e) => {
+//     console.error(e);
+//     res.status(500).send('Error al iniciar la cámara');
+//   });
+// });
 
 module.exports = app;

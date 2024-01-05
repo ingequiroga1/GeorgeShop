@@ -6,6 +6,8 @@ block content
       h1= title
     div.col-sm-2
       a(href='#' data-toggle="modal" data-target="#passModal") #[strong Ver Productos]
+    div.col-sm-2
+       a(href='/venta/report') #[strong Venta Diaria]
   div.autocomplete.mt-5
     input#prodescripcion.form-control(type='text' name='prodescripcion' placeholder='Consulta de precios'  autocomplete='off' onKeyUp='document.getElementById(this.id).value=document.getElementById(this.id).value.toUpperCase()')
   

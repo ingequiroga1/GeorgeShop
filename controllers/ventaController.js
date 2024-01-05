@@ -97,13 +97,13 @@ exports.venta_detail = function(req, res, next) {
         },
     }, function(err, results) {
         if (err) { return next(err); }
-        console.log(results.venta);
         if (results.venta==null) { // No results.
             var err = new Error('Venta not found');
             err.status = 404;
             return next(err);
         }
         //if (results.venta.length > 0) {
+            console.log(results);
             res.render('venta_detail', { title: 'Detalle', venta: results.venta } );
     });
 
@@ -766,6 +766,7 @@ exports.venta_eliminar_producto_get = function(req, res, next) {
 exports.venta_eliminar_producto_post = function(req, res, next) {
     var id = req.params.id;
     var idproducto = req.params.idproducto;
+    console.log(req);
     
     Venta.findById(id).exec(function (err, venta) {
         if (err) { return next(err);}
@@ -832,9 +833,9 @@ exports.venta_create_get = function(req, res, next) {
 
 //Api
 exports.venta_api_create_get = function(req, res) {
-    
+   
     Venta.findOne().sort({secuencia:-1}).exec(function (err, max_secuencia) {
-      if(err) {return err;}
+      if(err) {res.json(err);}
       var secuencia = 0;
       
       if (max_secuencia)
@@ -847,7 +848,7 @@ exports.venta_api_create_get = function(req, res) {
           productos: []
       });
       venta.save(function (err) {
-          if (err) { return err; }
+          if (err) { res.json(err); }
           // Venta guardada. Redirect al detalle de la venta.
           res.json(venta);
         
@@ -925,3 +926,58 @@ exports.venta_busquedaprecio = function(req, res, next) {
         }); 
     }
 };
+
+//Muestra las ventas por dia 
+exports.venta_reportes = function(req, res, next) {
+
+    let fechaFin = new Date();
+    let fechaInicio = new Date(); 
+    
+    fechaInicio.setDate(fechaFin.getDate()-3);
+    Venta.find({
+        fecha: {
+          $gte: fechaInicio, // Mayor o igual que fechaInicio
+          $lte: fechaFin,   // Menor o igual que fechaFin
+        },
+      }).then(result => {
+             // Hacer algo con el resultado, como imprimirlo o manejarlo
+            //result.forEach((element) => console.log(element.fecha_formateada)) 
+            let datos = [];
+            
+            result.forEach((element)=>{
+                let elem = {
+                    total: element.total,
+                    no_piezas: element.no_piezas,
+                    no_medias: element.no_medias,
+                    fecha: element.fecha_formateada
+                }
+                datos.push(elem);
+            })
+
+
+            const sumas = sumarPorFecha(datos);
+            res.render('venta_report', { title: 'Venta Diaria', sumas: sumas } );
+          })
+          .catch(err => {
+            console.error(err); // Manejar errores
+          });
+           
+    
+
+};
+
+
+function sumarPorFecha(arr) {
+    const result = Object.values(arr.reduce((acc, obj) => {
+      const fecha = obj.fecha;
+      if (!acc[fecha]) {
+        acc[fecha] = { fecha: fecha, total: 0, no_piezas: 0, no_medias: 0 };
+      }
+      acc[fecha].total += obj.total;
+      acc[fecha].no_piezas += obj.no_piezas;
+      acc[fecha].no_medias += obj.no_medias;
+      
+      return acc;
+    }, {}));
+    return result;
+  }

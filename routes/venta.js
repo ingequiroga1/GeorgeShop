@@ -13,6 +13,9 @@ router.get('/api/lista', venta_controller.venta_api_list);
 
 router.get('/carga_productos', venta_controller.venta_carga_productos);
 
+//Reportes
+router.get('/report', venta_controller.venta_reportes);
+
 router.post('/busqueda/:id', venta_controller.venta_busqueda);
 router.post('/busquedaprecio/:id', venta_controller.venta_busquedaprecio);
 
