@@ -192,6 +192,11 @@ exports.venta_imprimir_get = function(req, res, next) {
             doc.text(producto.producto.precio_formateado,430, alturafila, {width:'50', align:'right'});
             doc.text(producto.importe_formateado,500, alturafila, {width:'70', align:'right'});            
             alturafila += 20;
+
+            if (alturafila >= 620) {
+                doc.addPage();
+                alturafila = 30;  
+            }
         });
 
         if (alturafila >= 620) {
