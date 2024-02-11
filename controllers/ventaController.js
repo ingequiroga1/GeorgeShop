@@ -160,6 +160,63 @@ exports.venta_imprimir_get = function(req, res, next) {
         //const content = req.body.content
         doc.y = 30
         var alturafila = 30;
+        var numpagina = 1;
+        doc.text(numpagina,20,doc.page.height - 30,{
+            lineBreak: false
+          });
+
+        doc.on('pageAdded',()=> {
+            //agrega un num pag al final 
+            numpagina += 1;
+            doc.text(numpagina,20,doc.page.height - 30,{
+            lineBreak: false
+          })
+
+          //Agrega Aviso al final de cada pagina
+          doc.fontSize(9);
+          doc.text(avisoEncabezado, 20, doc.page.height - 80, {
+            lineBreak: false
+          });
+          doc.text(aviso, 20, doc.page.height - 70, {
+            lineBreak: false
+          });
+    
+          doc.text(aviso2, 20, doc.page.height - 60, {
+            lineBreak: false
+          });
+          doc.text(aviso3, 20, doc.page.height - 50, {
+            lineBreak: false
+          });
+
+          //Agrega cliente y fecha al inicio de cada pagina
+          doc.fontSize(12);
+          let posy = 50
+          doc.text('Cliente: ', 30, posy)
+          doc.text(venta.capturista, 80, posy);
+
+          doc.text('Fecha: ', 400, posy);
+          doc.text(venta.fecha_formateada, 450, posy);
+
+          //Agrega encabezado de tabla al inicio de cada pagina
+          posy += 50;
+          doc.moveTo(30, posy);
+          doc.lineTo(570,posy);
+          doc.stroke();
+          posy += 10;
+
+          doc.text('#Piezas  #Medias     Detalle', 30, posy);
+          doc.text('Importe', 500, posy, {width:'70', align:'right'});
+          doc.text('Precio', 450, posy, {width:'70', align:'left'});
+
+ 
+          posy += 20;
+          doc.moveTo(30, posy);
+          doc.lineTo(570,posy);
+          doc.stroke();
+          
+        });
+
+
         doc.text('Presupuesto', 400, alturafila);
         alturafila += 20;
         doc.text('Cliente: ', 30, alturafila);
@@ -182,6 +239,27 @@ exports.venta_imprimir_get = function(req, res, next) {
         doc.lineTo(570,alturafila);
         doc.stroke();
         alturafila += 10;
+        
+        let tamPagina = 24;
+        let avisoEncabezado = 'Política Devolución:';
+       
+        let aviso = 'El plazo para devolución del producto deberá hacerse en el término de 90 días a partir de la compra, siempre y cuando lo haga en su '; 
+        let aviso2 = 'empaque original. No aplica devoluciones en pares desiguales manchados, ni mal tratados la garantía, solo aplica, en defectos de fabricación,'; 
+        let aviso3 = 'y|o cuando el uso sea adecuado y presenten alguna falla. No hay garantía, en aplicaciones, ni en sistemas de luces led.'; 
+        doc.fontSize(9);
+        doc.text(avisoEncabezado, 20, doc.page.height - 80, {
+            lineBreak: false
+          });
+          doc.text(aviso, 20, doc.page.height - 70, {
+            lineBreak: false
+          });
+    
+          doc.text(aviso2, 20, doc.page.height - 60, {
+            lineBreak: false
+          });
+          doc.text(aviso3, 20, doc.page.height - 50, {
+            lineBreak: false
+          });
 
         venta.productos.forEach(producto => {
             doc.text(producto.cantidad,35, alturafila, {width:'25', align:'right'});
@@ -195,19 +273,23 @@ exports.venta_imprimir_get = function(req, res, next) {
 
             if (alturafila >= 620) {
                 doc.addPage();
-                alturafila = 30;  
+                alturafila = 140;
+                saltopagina=true;  
             }
         });
-
-        if (alturafila >= 620) {
-            doc.addPage();
-            alturafila = 30;
-            console.log('newpage');
+        
+        
+         if (alturafila >= 620) {
+             doc.addPage();
+             alturafila = 150;
             
         }
-        else{
-            alturafila = 620;
-        }
+         else{
+            //Coloca el resumen al inicio dependiendo del tampagina
+            alturafila = (venta.productos.length % tamPagina) == 0 ? 150 : 620; 
+         }
+
+
 
         doc.fontSize(16);
        //alturafila = 640;
@@ -227,32 +309,30 @@ exports.venta_imprimir_get = function(req, res, next) {
        var letras = NumeroALetras.NumeroALetras(venta.total);
 
        alturafila += 25;
-       doc.fontSize(9);
-       doc.text(letras, 50, alturafila);
+    //    doc.fontSize(9);
+    //    doc.text(letras, 50, alturafila);
 
        //alturafila += 25;
-       let avisoEncabezado = 'Política Devolución:';
+    //    let avisoEncabezado = 'Política Devolución:';
        
-       let aviso = 'El plazo para devolución del producto deberá hacerse en el término de 90 días a partir de la compra, siempre y cuando lo haga en su '; 
-       let aviso2 = 'empaque original. No aplica devoluciones en pares desiguales manchados, ni mal tratados la garantía, solo aplica, en defectos de fabricación,'; 
-       let aviso3 = 'y|o cuando el uso sea adecuado y presenten alguna falla. No hay garantía, en aplicaciones, ni en sistemas de luces led.'; 
+    //    let aviso = 'El plazo para devolución del producto deberá hacerse en el término de 90 días a partir de la compra, siempre y cuando lo haga en su '; 
+    //    let aviso2 = 'empaque original. No aplica devoluciones en pares desiguales manchados, ni mal tratados la garantía, solo aplica, en defectos de fabricación,'; 
+    //    let aviso3 = 'y|o cuando el uso sea adecuado y presenten alguna falla. No hay garantía, en aplicaciones, ni en sistemas de luces led.'; 
       
-       let aviso4 = 'DEVOLUCIONES SOLO APLICAN POR DEFECTO DE FABRICACIÓN Y EN SU EMPAQUE ORIGINAL';
-       doc.text(avisoEncabezado, 20, doc.page.height - 80, {
-        lineBreak: false
-      });
-      doc.text(aviso, 20, doc.page.height - 70, {
-        lineBreak: false
-      });
-    //   doc.text(aviso4, 20, doc.page.height - 70, {
+       
+    //    doc.text(avisoEncabezado, 20, doc.page.height - 80, {
     //     lineBreak: false
     //   });
-      doc.text(aviso2, 20, doc.page.height - 60, {
-        lineBreak: false
-      });
-      doc.text(aviso3, 20, doc.page.height - 50, {
-        lineBreak: false
-      });
+    //   doc.text(aviso, 20, doc.page.height - 70, {
+    //     lineBreak: false
+    //   });
+
+    //   doc.text(aviso2, 20, doc.page.height - 60, {
+    //     lineBreak: false
+    //   });
+    //   doc.text(aviso3, 20, doc.page.height - 50, {
+    //     lineBreak: false
+    //   });
 
 
     
